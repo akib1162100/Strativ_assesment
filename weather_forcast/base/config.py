@@ -1,7 +1,7 @@
 import os
-from load_dotenv import load_dotenv
+# from load_dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
 DB_USER = os.getenv("Weather_DB_USER", "postgres")
 DB_PASSWORD = os.getenv("Weather_DB_PASSWORD", "mis123")

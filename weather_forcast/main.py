@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from base.app import app
 from base.db import create_db_and_tables
 
-
 origins = [
     "http://localhost",
     "http://localhost:8000",

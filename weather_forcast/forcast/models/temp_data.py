@@ -16,4 +16,4 @@ class Temperature(Base, BaseModel):
 
 
 class DistrictTemp(District):
-    temp_data = relationship("Temperature", back_populates="district")
+    temp_datas = relationship("Temperature", back_populates="district")

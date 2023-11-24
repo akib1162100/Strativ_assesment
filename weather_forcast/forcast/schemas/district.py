@@ -22,4 +22,4 @@ class DistrictRead(DistrictUpdate):
 
 
 class DistrictReadTemp(DistrictRead):
-    temp_data = Optional[List[TempReadBase]]
+    temp_datas = Optional[List[TempReadBase]]

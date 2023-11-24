@@ -4,6 +4,8 @@ from fastapi.responses import JSONResponse
 
 weather_forcast_router = APIRouter(
     prefix="/foscast",
+    tags=["Forcast"],
     responses={404: {"description": "Not found"}},
 )
 
+@weather_forcast_router.get("",)

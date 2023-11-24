@@ -1,5 +1,6 @@
 from base.schemas.base_schema import BaseSchema, UpdateBaseSchema
-from typing import Optional
+from typing import Optional, List
+from forcast.schemas.district import DistrictRead
 
 
 class DivisionBase(BaseSchema):
@@ -13,3 +14,6 @@ class DivisionUpdate(UpdateBaseSchema):
 class DivisionRead(DivisionUpdate):
     id: Optional[int]
 
+
+class DivisionReadDetails(DivisionRead):
+    div_district: Optional[List[DistrictRead]]

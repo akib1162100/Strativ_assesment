@@ -5,21 +5,28 @@ from forcast.schemas.temperature import TempReadBase
 
 class DistrictBase(BaseSchema):
     name: str
-    latitude: float
-    longitude: float
+    lat: float
+    long: float
     division_id: int
+    id: Optional[int]
 
 
 class DistrictUpdate(UpdateBaseSchema):
     name: Optional[str]
-    latitude: Optional[float]
-    longitude: Optional[float]
+    lat: Optional[float]
+    long: Optional[float]
     division_id: Optional[int]
-
-
-class DistrictRead(DistrictUpdate):
     id: Optional[int]
 
 
-class DistrictReadTemp(DistrictRead):
-    temp_datas = Optional[List[TempReadBase]]
+class DistrictRead(DistrictUpdate):
+    pass
+
+
+class DistrictReadBase(UpdateBaseSchema):
+    lat: Optional[float]
+    long: Optional[float]
+
+
+class DistrictReadTemp(DistrictUpdate):
+    temp_datas: List[TempReadBase]

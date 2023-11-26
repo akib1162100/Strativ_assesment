@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from base.app import app
+from forcast.app import app_router
 from base.db import create_db_and_tables
 
 origins = [
@@ -20,6 +21,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(app_router)
 
 
 @app.get("/")

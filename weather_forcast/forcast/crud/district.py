@@ -2,17 +2,17 @@ from typing import List, Union, Optional
 from sqlalchemy import update
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session, selectinload
-
+from sqlalchemy.dialects.postgresql import insert
+from base.db import async_session_maker
 from forcast.schemas.district import (
     DistrictBase,
     DistrictRead,
     DistrictUpdate,
     DistrictReadTemp,
+    DistrictReadBase,
 )
 from forcast.schemas.temperature import TempReadBase
-from base.db import async_session_maker
 from forcast.models.district import District
-from forcast.models.temp_data import DistrictTemp
 
 
 class DistrictDAL:
@@ -43,9 +43,9 @@ class DistrictDAL:
     ) -> List[DistrictReadTemp]:
         if id:
             q = await self.db_session.execute(
-                select(DistrictTemp)
-                .where(DistrictTemp.id == id)
-                .options(selectinload(DistrictTemp.temp_datas))
+                select(District)
+                .where(District.id == id)
+                .options(selectinload(District.temp_datas))
             )
             temps = q.scalars().all()
             resp = self._proc_data(temps=temps)
@@ -53,16 +53,16 @@ class DistrictDAL:
 
         if name:
             q = await self.db_session.execute(
-                select(DistrictTemp)
-                .where(DistrictTemp.name == name)
-                .options(selectinload(DistrictTemp.temp_datas))
+                select(District)
+                .where(District.name == name)
+                .options(selectinload(District.temp_datas))
             )
             temps = q.scalars().all()
             resp = self._proc_data(temps=temps)
             return resp
         else:
             q = await self.db_session.execute(
-                select(DistrictTemp).options(selectinload(DistrictTemp.temp_datas))
+                select(District).options(selectinload(District.temp_datas))
             )
             temps = q.scalars().all()
             resp = self._proc_data(temps=temps)
@@ -74,25 +74,50 @@ class DistrictDAL:
         name: Union[str, None] = None,
     ) -> List[DistrictRead]:
         if id:
-            q = await self.db_session.execute(
-                select(DistrictTemp).where(DistrictTemp.id == id)
-            )
+            q = await self.db_session.execute(select(District).where(District.id == id))
             temps = q.scalars().all()
             resp = [DistrictRead(**temp.__dict__) for temp in temps]
             return resp
 
         if name:
             q = await self.db_session.execute(
-                select(DistrictTemp).where(DistrictTemp.name == name)
+                select(District).where(District.name == name)
             )
             temps = q.scalars().all()
             resp = [DistrictRead(**temp.__dict__) for temp in temps]
             return resp
         else:
-            q = await self.db_session.execute(select(DistrictTemp))
+            q = await self.db_session.execute(select(District))
             temps = q.scalars().all()
             resp = [DistrictRead(**temp.__dict__) for temp in temps]
             return resp
+
+    async def get_lat_long(
+        self,
+        id: Union[int, None] = None,
+        name: Union[str, None] = None,
+    ) -> List[DistrictReadBase]:
+        if id:
+            q = await self.db_session.execute(select(District).where(District.id == id))
+            temps = q.scalars().all()
+            lats = [temp.__dict__.get("lat") for temp in temps]
+            longs = [temp.__dict__.get("long") for temp in temps]
+            return lats, longs,
+
+        if name:
+            q = await self.db_session.execute(
+                select(District).where(District.name == name)
+            )
+            temps = q.scalars().all()
+            lats = [temp.__dict__.get("lat") for temp in temps]
+            longs = [temp.__dict__.get("long") for temp in temps]
+            return lats, longs
+        else:
+            q = await self.db_session.execute(select(District))
+            temps = q.scalars().all()
+            lats = [temp.__dict__.get("lat") for temp in temps]
+            longs = [temp.__dict__.get("long") for temp in temps]
+            return lats, longs
 
     async def update(
         self,
@@ -118,6 +143,35 @@ class DistrictDAL:
             await self.db_session.execute(q)
             await self.db_session.commit()
             return data_dict
+
+    async def sync(
+        self,
+        district_list: List[DistrictUpdate],
+    ):
+        for data in district_list:
+            stmt = insert(District).values(
+                id=data.id,
+                name=data.name,
+                lat=data.lat,
+                long=data.long,
+                division_id=data.division_id
+                # Add more columns as needed
+            )
+
+            on_conflict_stmt = stmt.on_conflict_do_update(
+                constraint="district_id_pkey",
+                set_={
+                    "name": stmt.excluded.name,
+                    "lat": stmt.excluded.lat,
+                    "long": stmt.excluded.long,
+                    "division_id": stmt.excluded.division_id,
+                },
+            )
+
+            await self.db_session.execute(on_conflict_stmt)
+
+        # Commit the changes
+        await self.db_session.commit()
 
     async def delete(self, id: int):
         request = await self.db_session.execute(

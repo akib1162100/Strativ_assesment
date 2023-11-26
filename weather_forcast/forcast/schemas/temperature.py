@@ -1,7 +1,6 @@
 from base.schemas.base_schema import BaseSchema, UpdateBaseSchema
 from typing import Optional
 from datetime import date, time
-from forcast.schemas.district import DistrictRead
 
 
 class TempBase(BaseSchema):
@@ -9,6 +8,7 @@ class TempBase(BaseSchema):
     date: date
     time: time
     temperature: float
+    district_name: str
 
 
 class TempUpdate(UpdateBaseSchema):
@@ -16,12 +16,9 @@ class TempUpdate(UpdateBaseSchema):
     date: Optional[date]
     time: Optional[time]
     temperature: Optional[float]
-    temp_avg: Optional[float]
+    temp_average: Optional[float]
+    district_name: Optional[str]
 
 
 class TempReadBase(TempUpdate):
     id: Optional[int]
-
-
-class TempReadDetails(TempReadBase):
-    district: Optional[DistrictRead]

@@ -6,6 +6,7 @@ from forcast.services.district import DistrictService
 from forcast.services.temperature import TempService
 import timeit
 import asyncio
+from datetime import date, datetime
 
 weather_forcast_router = APIRouter(
     prefix="/foscast",
@@ -48,7 +49,15 @@ async def sync_district():
     return await dist_service.sync()
 
 
-@weather_forcast_router.post("/coolest_temp", status_code=status.HTTP_200_OK)
+@weather_forcast_router.get("/coolest_temp", status_code=status.HTTP_200_OK)
 async def coolest_temp():
     temp_service = TempService()
     return await temp_service.find_cooler()
+
+
+@weather_forcast_router.get("/recommand", status_code=status.HTTP_200_OK)
+async def recommand_temp(start: str, dest: str, retrun_date: date):
+    temp_service = TempService()
+    return await temp_service.recommand(
+        start_dist=start, end_dist=dest, return_date=retrun_date
+    )
